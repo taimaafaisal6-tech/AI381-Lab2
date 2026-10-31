@@ -1,0 +1,19 @@
+AI381 Lab 1 - Pain log
+Name: Taimaa Faisal
+Student ID: 173122
+Date: 15/10/2026
+
+Step               | Minutes | What failed or slowed me down                              | Question I could not answer
+-------------------|---------|-----------------------------------------------------------|------------------------------------------
+Round 1 (train)    | 20      | A KeyError occurred because the feature name did not match the dataset column. | How can I prevent feature name mismatches?
+Round 1 (serve)    | 10      | Port 8000 was already in use, so I switched to port 8001. | How can I identify which process is using a port?
+Round 1 (3 x curl) | 10      | I opened the incorrect URL /docs** and received a 404 error. | How can I automate API testing?
+Twist 1 (v2 data)  | 25      | I updated the feature names to match the columns in churn_v2.csv. | How can I detect dataset schema changes automatically?
+Twist 2 (fresh env)| 20      | PowerShell blocked script activation. I created a fresh environment and installed the required packages. A scikit-learn version warning appeared when loading the model. | How can I keep package versions consistent across environments?
+Twist 3 (version?) | 10      | The API loads model.joblib without explicit model version metadata. | How can I verify exactly which model version the API is serving?
+-------------------|---------|-----------------------------------------------------------|------------------------------------------
+Total              | 95      | Number of failures: 5                                     |
+
+The one thing I would automate first, and why:
+
+I would automate environment setup, model training, and API testing. This would reduce dependency problems, feature-name mismatches, and manual testing errors. I would also record model and package versions to make deployments reproducible.
