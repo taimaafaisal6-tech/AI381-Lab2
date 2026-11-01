@@ -1,42 +1,128 @@
-# AI381 Lab 1 · The Manual Pipeline Race (starter kit)
+# AI381 Lab 2 – Bring Your Own Model: Container + CI
 
-Dr. Tariq Al-Omari · AI381 Machine Learning Operations · JUST · Fall 2026/27
+**Course:** AI381 – Machine Learning Operations  
+**Instructor:** Dr. Tariq Al-Omari  
+**University:** Jordan University of Science and Technology (JUST)  
+**Semester:** Fall 2026/27
 
-Lab 1 is short, a little chaotic, and on purpose. You will deliver a model by hand, change it, and
-log what that costs you. There is no wrong result: an honest pain log is a great pain log.
+## Project Overview
 
-## What is in this kit
+This project packages a machine learning churn prediction model as a FastAPI service, runs it inside a Docker container, and automates testing and image publishing using GitHub Actions.
 
-| File | What it is |
-|---|---|
-| `churn_v1.csv` | Customer churn data, version 1 (1,200 customers) |
-| `churn_v2.csv` | Version 2 of the same data. Something changed. You will find out in Twist 1 |
-| `lab1_baseline.ipynb` | The notebook that trains a logistic regression and saves `model.joblib` |
-| `app/main.py` | A small FastAPI service that loads `model.joblib` and serves `/predict` |
-| `sample_request.json` | One customer to send to the API |
-| `requirements.txt` | The packages the notebook author remembered to write down |
-| `pain_log_template.txt` | Copy it to `pain_log.txt` and fill it in as you go |
+## Project Structure
 
-## The race (start your stopwatch first)
+```text
+AI381-Lab2/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── src/
+│   ├── app/
+│   │   ├── main.py
+│   │   └── model.joblib
+│   └── train/
+│       └── train.py
+├── tests/
+│   └── test_api.py
+├── Dockerfile
+├── requirements.txt
+└── README.md
+```
 
-1. **Round 1.** Run the notebook with `churn_v1.csv`. Start the API by hand:
-   `uvicorn app.main:app --port 8000`
-   Send three predictions with curl, changing the values each time:
-   `curl -X POST localhost:8000/predict -H "Content-Type: application/json" -d @sample_request.json`
-2. **Twist 1.** Change the notebook to `churn_v2.csv`, retrain and redeploy. Find and fix what breaks.
-3. **Twist 2.** Create a brand-new virtual environment (or a Codespace) and rebuild everything using only your own notes.
-4. **Twist 3.** Answer: "Which model version is your API serving right now?" and explain why it is hard to prove.
-5. Finish `pain_log.txt`: minutes per step, every failure, every unanswered question.
+## API Endpoints
 
-## Setup
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/health` | Checks whether the API is running |
+| POST | `/predict` | Returns the customer's churn probability |
 
-- Python 3.11 or newer and a terminal. On Windows, use WSL2 with Ubuntu.
-- `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
+## Run the Project with Docker
 
-## Turning it in
+Make sure Docker Desktop is running, then execute:
 
-Record one 5–8 minute video with your face and voice, say each checkpoint aloud, and turn it in on the
-**Lab 1** assignment in the **AI381 MLOPs** team on Microsoft Teams (Lab Submissions channel, Assignments tab).
-The full instructions, checkpoints and rubric are on e-learning and on the Teams assignment.
+```bash
+docker run --rm -p 8000:8000 ghcr.io/taimaafaisal6-tech/ai381-lab2@sha256:c3564b19f813becf3d609c89f4b37e22994be52423d85a4ff0a68244f900af11
+```
 
-Questions: Thursday online office hours on Teams, the Lab Submissions channel, or talomari@just.edu.jo.
+Open the API documentation:
+
+http://localhost:8000/docs
+
+Health check:
+
+http://localhost:8000/health
+
+## Run Tests Locally
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the test suite:
+
+```bash
+python -m pytest tests -v
+```
+
+Run lint:
+
+```bash
+ruff check src tests
+```
+
+## Testing
+
+The project includes seven automated tests covering:
+
+- Health endpoint response.
+- Prediction endpoint response.
+- Missing input fields.
+- Invalid input values.
+- Prediction probability range.
+- Model loading.
+- Deterministic predictions.
+
+## Docker and Security
+
+The Dockerfile uses:
+
+- Multi-stage build.
+- A non-root application user.
+- A health check.
+- Pinned Python dependencies.
+- Debian package updates.
+
+Trivy is used in the CI/CD workflow to scan the Docker image for vulnerabilities. Scan findings should be reviewed; a successful workflow does not necessarily mean the image has zero vulnerabilities.
+
+## CI/CD Pipeline
+
+GitHub Actions automatically:
+
+1. Runs Ruff lint checks.
+2. Runs the automated tests.
+3. Builds the Docker image on pushes to `main`.
+4. Scans the image using Trivy.
+5. Publishes the image to GitHub Container Registry (GHCR).
+
+The workflow uses GitHub Actions pinned to full commit SHAs.
+
+**GitHub Actions Status:**
+
+[![AI381 CI/CD](https://github.com/taimaafaisal6-tech/AI381-Lab2/actions/workflows/ci.yml/badge.svg)](https://github.com/taimaafaisal6-tech/AI381-Lab2/actions/workflows/ci.yml)
+
+## Published Docker Image
+
+**Image:**
+
+`ghcr.io/taimaafaisal6-tech/ai381-lab2`
+
+**Image Digest:**
+
+`sha256:c3564b19f813becf3d609c89f4b37e22994be52423d85a4ff0a68244f900af11`
+
+## Repository
+
+https://github.com/taimaafaisal6-tech/AI381-Lab2
+

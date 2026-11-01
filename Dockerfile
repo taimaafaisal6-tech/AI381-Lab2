@@ -1,6 +1,6 @@
 
 # Stage 1: Build dependencies
-FROM python:3.11.1-slim AS builder
+FROM python:3.11-slim-bookworm AS builder
 
 WORKDIR /build
 
@@ -10,15 +10,23 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 
 # Stage 2: Runtime
-FROM python:3.11.1-slim AS runtime
+FROM python:3.11-slim-bookworm AS runtime
 
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+# Update system packages
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /install /usr/local
 COPY src ./src
+
+# Fix vulnerable setuptools
+RUN python -m pip install --no-cache-dir setuptools==78.1.1
 
 # Create non-root user
 RUN useradd --create-home --uid 10001 appuser \
